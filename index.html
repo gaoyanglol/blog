@@ -229,6 +229,176 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/blog/blog/2019/09/22/核心》（1）：对象、原型和继承/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="gaoyanglol">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/blog/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="山高路远">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/blog/2019/09/22/核心》（1）：对象、原型和继承/" itemprop="url">《javascript核心》（1）：对象、原型和继承</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2019-09-22T23:02:16+08:00">
+                2019-09-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>本文译自：<a href="http://dmitrysoshnikov.com/ecmascript/javascript-the-core/?source=post_page-----54102240a8b4----------------------" target="_blank" rel="noopener">JavaScript. The Core. - Dmitry Soshnikov</a></p>
+<h2 id="对象"><a href="#对象" class="headerlink" title="对象"></a>对象</h2><p>ECMAScript 是一门高度抽象化的面向对象语言，主要和<em>对象</em>打交道。虽然也有<em>原始值</em>，但是当需要的时候也会被转换为对象。</p>
+<blockquote>
+<p>对象是一个<em>由属性组成的集合</em>，且有<em>单一的原型</em>。它的原型要么是一个对象，要么是 <code>null</code>。</p>
+</blockquote>
+<p>我们来看一个简单的对象示例。一个对象的原型由内部的 <code>[[Prototype]]</code> 属性引用。但是在用户级的代码中，我们用 <code>__proto__</code> 来实现该引用，可以读作 ‘dunder proto’ 。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> foo = &#123;</span><br><span class="line">    x: <span class="number">10</span>,</span><br><span class="line">    y: <span class="number">20</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们会得到这样一种结构，它有两个显式的<em>自有</em>属性 <code>x</code>，<code>y</code>。还有一个隐式的 <code>__proto__</code> 属性，指向 <code>foo</code> 的原型。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/4907185-a55f1ddfc36e7b1d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="图1. 一个指向原型的对象"></p>
+<p>原型有什么用？我们用<em>原型链</em>的概念来回答这个问题。</p>
+<h2 id="原型链"><a href="#原型链" class="headerlink" title="原型链"></a>原型链</h2><p>原型其实就是带有自有属性的对象。原型A指向它自身的原型——原型B，原型B再指向自身的原型——原型C，直到最终指向的原型为 <code>null</code>。这就称为<em>原型链</em>。</p>
+<blockquote>
+<p>原型链是一个由对象组成的<em>有限</em>链，用来实现<em>继承</em>和<em>共享属性</em>。</p>
+</blockquote>
+<p>假设我们有两个对象，它们只有很小一部分有区别，其余的部分都一样。显然，一个设计良好的系统会<em>重用</em>相似的功能/代码，而不是在每一个对象中重复一遍。在基于类的语言中，这种<em>代码重用</em>的语式称为<em>基于类的继承</em>——把相似的功能放入类 <code>A</code> ，再创建出继承自 <code>A</code> 且拥有自身额外小改动的 <code>B</code> 和 <code>C</code>。</p>
+<p>ECMAScript 没有类的概念。不过代码重用的语式没有太大区别（在有些方面甚至比类更加灵活），通过<em>原型链</em>就可以实现。这种继承方式称作<em>委托继承</em>（或者更接近 ECMAScript 的说法是，<em>原型继承</em>）。</p>
+<p>和类 <code>A</code> ，<code>B</code>，<code>C</code> 的例子相似，在 ECMAScript 中，你会创建对象 <code>a</code>, <code>b</code>, <code>c</code>。对象 <code>a</code> 中存放对象 <code>b</code> 和 <code>c</code> 的相同部分，<code>b</code> 和 <code>c</code> 中只存放它们自身的额外属性或方法。 </p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a = &#123;</span><br><span class="line">    x: <span class="number">10</span>,</span><br><span class="line">    calculate: <span class="function"><span class="keyword">function</span> (<span class="params">z</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.x + <span class="keyword">this</span>.y + z</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> b = &#123;</span><br><span class="line">    y: <span class="number">20</span>,</span><br><span class="line">    __proto__: a</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> c = &#123;</span><br><span class="line">    y: <span class="number">30</span>,</span><br><span class="line">    __proto__: a</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 调用继承方法</span></span><br><span class="line">b.calculate(<span class="number">30</span>) <span class="comment">// 60</span></span><br><span class="line">c.calculate(<span class="number">40</span>) <span class="comment">// 80</span></span><br></pre></td></tr></table></figure>
+<p>很简单对吧？我们可以看到 <code>b</code> 和 <code>c</code> 都能访问对象 <code>a</code> 中定义的 <code>calculate</code> 方法。这正是通过原型链来实现的。</p>
+<p>原理很简单：如果一个属性或方法在对象自身中无法找到（比如对象没有<em>自有</em>属性），那么就尝试在原型链中寻找该属性/方法。如果在对象的原型中也找不到该属性，那么就在原型的原型中找，如此往复，直到遍历整个原型链（与基于类的继承做法完全一样，当解析一个继承<em>方法</em>时——我们也会找遍<em>类型链</em>）。第一个找到的同名属性/方法将被引用。找到的这个属性称作<em>继承</em>属性。如果在整个原型链中都找不到这个属性，则返回 <code>undefined</code> 。</p>
+<p>注意，在调用继承方法时，其中的 <code>this</code> 绑定的是调用该方法的<em>原始</em>对象而不是该方法所在的原型对象。在上面的示例中 <code>this.y</code> 的值取自对象 <code>b</code> 和 <code>c</code> ，而不是 <code>a</code> 。不过 <code>this.x</code> 的值取自 <code>a</code> ，同样是通过<em>原型链</em>机制。</p>
+<p>如果一个对象没有明确的指定其原型，则其 <code>__proto__</code> 默认指向原型 <code>Object.prototype</code> 。</p>
+<p>原型 <code>Object.prototype</code> 自身也有 <code>__proto__</code> 属性，它指向原型链的<em>最后一环</em> <code>null</code>。</p>
+<p>下图展示了对象 <code>a</code>，<code>b</code> 和 <code>c</code> 的继承结构。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/4907185-97c93fd92c3a7a05.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="图2. 原型链"></p>
+<p><strong>注意：</strong></p>
+<ul>
+<li><p>ES5中制定了另外一种原型继承的方法，使用 <code>Object.create</code> 函数：</p>
+ <figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> b = <span class="built_in">Object</span>.create(a, &#123;<span class="attr">y</span>: &#123;<span class="attr">value</span>: <span class="number">20</span>&#125;&#125;)</span><br><span class="line"><span class="keyword">var</span> c = <span class="built_in">Object</span>.create(a, &#123;<span class="attr">y</span>: &#123;<span class="attr">value</span>: <span class="number">30</span>&#125;&#125;)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>你可以在<a href="http://dmitrysoshnikov.com/ecmascript/es5-chapter-1-properties-and-property-descriptors/#new-api-methods" target="_blank" rel="noopener">这一章</a>中获取更多关于 ES5 API 的信息。</p>
+</li>
+<li><p>ES6 已经将 <code>__proto__</code> 纳入标准，它可以用于对象的初始化。</p>
+</li>
+</ul>
+<p>我们经常会需要用到一些有<em>相同或相似声明结构</em>（比如相同属性）但<em>声明值</em>不同的对象。这种情况我们可以使用<em>构造函数</em>，它能用<em>特定的格式</em>创建对象。</p>
+<h2 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h2><p>除了用特定格式创建对象，构造函数还有一个重要的作用 —— 它会为新创建的对象<em>自动指定一个原型</em>。这个原型就存放在 <code>ConstructorFunction.prototype</code> 属性里。</p>
+<p>我们可以用构造函数重写前面例子中的对象 <code>b</code> 和 <code>c</code> 。这样，<code>Foo.prototype</code> 就扮演了对象 <code>a</code> 的角色：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 一个构造函数</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Foo</span>(<span class="params">y</span>) </span>&#123;</span><br><span class="line">    <span class="comment">// 可以用固定格式创建对象：</span></span><br><span class="line">    <span class="comment">// 他们有后生成的自有 'y' 属性</span></span><br><span class="line">    <span class="keyword">this</span>.y = y</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 同时 "Foo.prototype" 里存放着新创建对象的原型的引用,</span></span><br><span class="line"><span class="comment">// 所以我们可以用它来定义共享的/继承的属性或方法，于是和前面例子一样，我们创建：</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 继承属性 "x"</span></span><br><span class="line">Foo.prototype.x = <span class="number">10</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 还有继承方法 "calculate"</span></span><br><span class="line">Foo.prototype.calculate = <span class="function"><span class="keyword">function</span> (<span class="params">z</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">this</span>.x + <span class="keyword">this</span>.y + z</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 再来用“模板” Foo 创建对象 "b" 和 "c"</span></span><br><span class="line"><span class="keyword">var</span> b = <span class="keyword">new</span> Foo(<span class="number">20</span>)</span><br><span class="line"><span class="keyword">var</span> c = <span class="keyword">new</span> Foo(<span class="number">30</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 调用继承方法</span></span><br><span class="line">b.calculate(<span class="number">30</span>) <span class="comment">// 60</span></span><br><span class="line">c.calculate(<span class="number">40</span>) <span class="comment">// 80</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 来看看属性引用是否和预期的一样</span></span><br><span class="line"><span class="built_in">console</span>.log(</span><br><span class="line">    b.__proto__ === Foo.prototype, <span class="comment">// true</span></span><br><span class="line">    c.__proto__ === Foo.prototype, <span class="comment">// true</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 同时 "Foo.prototype" 自动创建一个特殊属性 "constructor" ，</span></span><br><span class="line">    <span class="comment">// 指向构造函数本身；</span></span><br><span class="line">    <span class="comment">// 实例对象 "b" 和 "c" 可以透过委托找到该属性并且用它来查看它们的构造器。</span></span><br><span class="line"></span><br><span class="line">    b.constructor === Foo, <span class="comment">// true</span></span><br><span class="line">    c.constructor === Foo, <span class="comment">// true</span></span><br><span class="line">    Foo.prototype.constructor === Foo, <span class="comment">// true</span></span><br><span class="line"></span><br><span class="line">    b.calculate === b.__proto__.calculate, <span class="comment">// true</span></span><br><span class="line">    b.__proto__.calculate === Foo.prototype.calculate <span class="comment">// true</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>这段代码可以用下图的关系来表达：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/4907185-14b33bfff0f7bb1c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="图3. 构造函数和对象间的关系"></p>
+<p>这张图再次展示了每一个对象都有原型。构造函数 <code>Foo</code> 也有自己的 <code>__proto__</code> ，它指向 <code>Function.prototype</code> ，而 <code>Function.prototype</code> 又通过 <code>__proto__</code> 指向 <code>Object.prototype</code> 。`</p>
+<p><code>Foo.prototype</code> 就是 <code>Foo</code> 的一个显式属性。它是对象 <code>b</code> 和 <code>c</code> 的原型。</p>
+<p>严格来说，如果要分类的话，构造函数和原型的组合可以称作“类”。实际上，像 Python 的<em>头等</em>动态类的实现和属性/方法这种解决方案完全一样。由此看来，Python 中的类其实是 ECMAScript 委托继承的一种语法糖。</p>
+<p><strong>注意：</strong></p>
+<ul>
+<li>在 ES6 中，类 “class” 的概念已经纳入标准，作为上面所述的构造函数的语法糖。由此看来，原型链成为了类继承的一种详细实现。<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// ES6</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Foo</span> </span>&#123;</span><br><span class="line">    <span class="keyword">constructor</span>(name) &#123;</span><br><span class="line">        <span class="keyword">this</span>._name = name;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    getName() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>._name;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Bar</span> <span class="keyword">extends</span> <span class="title">Foo</span> </span>&#123;</span><br><span class="line">    getName() &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">super</span>.getName() + <span class="string">' Doe'</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> bar = <span class="keyword">new</span> Bar(<span class="string">'John'</span>);</span><br><span class="line"><span class="built_in">console</span>.log(bar.getName()); <span class="comment">// John Doe</span></span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<p>在 ES3 系列文章的第7章中可以找到这部分内容更完整和详细的解析。其中分为两个部分：<a href="http://dmitrysoshnikov.com/ecmascript/chapter-7-1-oop-general-theory/" target="_blank" rel="noopener">7.1.面向对象编程：概论</a>，在这部分中你可以找到各种面向对象编程的范例和语式，以及它们和 ECMAScript 的对比，还有 <a href="http://dmitrysoshnikov.com/ecmascript/chapter-7-2-oop-ecmascript-implementation/" target="_blank" rel="noopener">7.2.面向对象编程：ECMAScript 实现</a>，完全忠于 ECMAScript 中的面向对象编程实现。</p>
+<p>现在我们已经了解了对象的基本面，继续来看<em>运行时程序执行</em>在 ECMAScript 中如何实现。这就是所谓的一个<em>执行上下文栈</em>，其中的每一个元素都可以抽象地用对象来代表。没错，ECMAScript 中几乎所有地方都用对象的概念运作。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/blog/blog/2019/08/01/JS里的类型/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -912,7 +1082,7 @@
               
                 <a href="/blog/archives/">
               
-                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-count">5</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
